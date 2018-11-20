@@ -18,3 +18,6 @@ all: main
 
 main: main.cpp shader.h shader.fs shader.vs 
 	g++ main.cpp $(INC) $(CFLAGS) -o main -std=c++11
+
+clear:
+	@rm main
