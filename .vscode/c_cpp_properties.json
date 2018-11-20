@@ -4,10 +4,13 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "/home/tet/test_sets/workspace/thirdpartylib/include"
+                "/home/tet/test_sets/workspace/thirdpartylib/include",
+                "/usr/include/c++/5/",
+                "/usr/include/x86_64-linux-gnu/c++/5/"
+
             ],
             "defines": [],
-            "compilerPath": "/usr/bin/gcc",
+            "compilerPath": "/usr/bin/g++",
             "cStandard": "c11",
             "cppStandard": "c++17",
             "intelliSenseMode": "clang-x64"

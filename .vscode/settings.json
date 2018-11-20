@@ -25,6 +25,7 @@
         "typeinfo": "cpp",
         "cmath": "cpp",
         "fstream": "cpp",
-        "sstream": "cpp"
+        "sstream": "cpp",
+        "math.h": "c"
     }
 }
