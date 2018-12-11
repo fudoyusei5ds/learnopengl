@@ -102,3 +102,16 @@ glVertexAttribPointer的参数:
 glEnableVertexAttribArray以顶点属性位置值为参数, 启用顶点属性. (顶点属性默认是禁用的)  
 
 #### 8.顶点数组对象(VAO)
+VAO可以像VBO那样被绑定, 任何随后的顶点属性调用都会储存在这个VAO中, 当配置顶点属性指针时, 只需要将那些调用执行依次, 之后再绘制物体的时候只需要绑定相应的VAO就行了.  
+一个VAO会储存以下内容:  
+* glEnableVertexAttribArray和glDisableVertexAttribArray的调用.  
+* 通过glVertexAttribPointer设置的顶点属性配置.  
+* 通过glVertexAttribPointer调用与顶点属性关联的顶点缓冲对象.  
+
+创建一个VAO:  
+```
+    unsigned int VAO;
+    glGenVertexArrays(1, &VAO); //绑定顶点数组对象到指定的ID
+```
+要想使用VAO, 要做的只是使用'''glBindVertexArray(VAO);'''绑定VAO. 从绑定之后起, 我们应该绑定和配置对应的VBO和属性指针, 之后解绑VAO供之后使用. 当之后打算绘制一个物体的时候, 只要在绘制物体前把VAO绑定到希望使用的绑定上就行了.  
+当要绘制多个物体时, 首先要生成/配置所有的VAO(和必须的VBO及属性指针), 然后储存它们供之后使用. 当打算绘制物体的时候绑定对应的VAO, 绘制完之后再解绑VAO.  
