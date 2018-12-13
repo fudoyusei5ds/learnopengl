@@ -113,8 +113,34 @@ VAO可以像VBO那样被绑定, 任何随后的顶点属性调用都会储存在
     unsigned int VAO;
     glGenVertexArrays(1, &VAO); //绑定顶点数组对象到指定的ID
 ```
-要想使用VAO, 要做的只是使用'''glBindVertexArray(VAO);'''绑定VAO. 从绑定之后起, 我们应该绑定和配置对应的VBO和属性指针, 之后解绑VAO供之后使用. 当之后打算绘制一个物体的时候, 只要在绘制物体前把VAO绑定到希望使用的绑定上就行了.  
+要想使用VAO, 要做的只是使用  
+```
+    glBindVertexArray(VAO);  
+```  
+绑定VAO. 从绑定之后起, 我们应该绑定和配置对应的VBO和属性指针, 之后解绑VAO供之后使用. 当之后打算绘制一个物体的时候, 只要在绘制物体前把VAO绑定到希望使用的绑定上就行了.  
 当要绘制多个物体时, 首先要生成/配置所有的VAO(和必须的VBO及属性指针), 然后储存它们供之后使用. 当打算绘制物体的时候绑定对应的VAO, 绘制完之后再解绑VAO.  
 
 #### 9.索引缓冲对象(EBO)
+<<<<<<< HEAD
 EBO也是缓冲, 专门用于储存索引, opengl调用这些顶点的索引来决定该绘制哪个顶点. 
+=======
+索引缓冲对象用于储存点的索引顺序以指定opengl绘制点的顺序:  
+1. 创建索引缓冲对象并绑定ID  
+```
+    unsigned int EBO;
+    glGenBuffers(1, &EBO);  
+```
+2. 绑定EBO到缓冲类型上, 然后将数据从内存复制到显卡内存中:  
+```
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+```
+3. 最后opengl依照索引顺序绘制点, 它会使用当前绑定的索引缓冲对象中的索引进行绘制:  
+```
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+```
+
+顶点数组对象同样可以保存索引缓冲对象的绑定状态. VAO绑定时正在绑定的索引缓冲对象会被保存为VAO的元素缓冲对象. 这样, 在绑定VAO时, 会自动绑定EBO.  
+注意: 当目标是GL_ELEMENT_ARRAY_BUFFER的时候, VAO会储存glBindBuffer的函数调用. 这也意味着它也会储存解绑调用, 所以确保在解绑VAO之前解绑索引数组缓冲, 否则它就没有这个EBO配置了.  
+>>>>>>> 2b20fd724048b5d511f4f4ca270a330cab1971ce
