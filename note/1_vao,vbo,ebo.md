@@ -29,6 +29,7 @@
 ```
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); //用于发送数据到显卡
 ```
+GL_STATIC_DRAW表示VBO中的数据将不会被改动(一次指定多次使用), "GL_DYNAMIC_DRAW"表示数据将会被频繁改动(反复指定与使用), "GL_STREAM_DRAW"表示每帧数据都要改变, STATIC与STREAM使用显卡内存, 而DYNAMIC使用AGP内存.  
 glBufferData专门把用户定义的数据复制到当前绑定缓冲. 其第一个参数是目标缓冲的类型. 第二个参数指定传输数据的大小(以字节为单位). 第三个参数是发送的实际数据. 第四个参数指定显卡如何管理给定的数据
 
 #### 4.GLSL
