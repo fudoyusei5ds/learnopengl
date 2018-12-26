@@ -55,7 +55,8 @@ int main()
 
     // 導入圖片
     int width, height, nrChannels;
-    unsigned char *data = stbi_load("container.jpg", &width, &height, &nrChannels, 0);
+    stbi_set_flip_vertically_on_load(true);
+    unsigned char *data = stbi_load("ABCD_A.png", &width, &height, &nrChannels, 0);
 
     // 生成紋理
     unsigned int texture1;
@@ -70,7 +71,7 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     // 使用之前的圖片來生成紋理
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
     // 自動生成多級漸遠紋理
     glGenerateMipmap(GL_TEXTURE_2D);
     // 釋放圖像數據
@@ -78,7 +79,7 @@ int main()
 
     // 載入第二張圖片紋理
     stbi_set_flip_vertically_on_load(true);
-    data = stbi_load("awesomeface.png", &width, &height, &nrChannels, 0);
+    data = stbi_load("ABCD_B.png", &width, &height, &nrChannels, 0);
     unsigned int texture2;
     glGenTextures(1,&texture2);
     glBindTexture(GL_TEXTURE_2D,texture2);
