@@ -48,7 +48,8 @@ int main()
     glViewport(0, 0, 800, 600);
     // 注冊窗體調整函數
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     /***************************************************************/
 
     Shader shader("shader.vs","shader.fs");
@@ -78,7 +79,7 @@ int main()
 
     // 載入第二張圖片紋理
     stbi_set_flip_vertically_on_load(true);
-    data = stbi_load("awesomeface.png", &width, &height, &nrChannels, 0);
+    data = stbi_load("ABCD_A.png", &width, &height, &nrChannels, 0);
     unsigned int texture2;
     glGenTextures(1,&texture2);
     glBindTexture(GL_TEXTURE_2D,texture2);
@@ -94,8 +95,6 @@ int main()
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
     stbi_image_free(data);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     shader.use();
 
@@ -184,7 +183,7 @@ int main()
         }
 
         // 設置顏色
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
         // 清除顏色緩衝區, 並使用上面設置的顏色進行填充 
         glClear(GL_COLOR_BUFFER_BIT);
 
