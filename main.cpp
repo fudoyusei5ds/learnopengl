@@ -48,8 +48,8 @@ int main()
     glViewport(0, 0, 800, 600);
     // 注冊窗體調整函數
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    // glEnable(GL_BLEND);
-    // glBlendFunc(GL_ONE, GL_ONE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     /***************************************************************/
 
     Shader shader("shader.vs","shader.fs");
@@ -71,7 +71,7 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     // 使用之前的圖片來生成紋理
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
     // 自動生成多級漸遠紋理
     glGenerateMipmap(GL_TEXTURE_2D);
     // 釋放圖像數據
@@ -92,7 +92,7 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     // png格式的圖片紋理需要加上alpha通道
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
     stbi_image_free(data);
 

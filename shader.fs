@@ -11,6 +11,6 @@ uniform float alpha;
 
 void main()
 {
-    // FragColor = texture(texture2, TexCoord);
-    FragColor = vec4(0, 0, texture(texture2, TexCoord).a, 1);
+    FragColor = texture(texture2, TexCoord);
+    // FragColor = vec4(0, 0, texture(texture2, TexCoord).a, 1);
 }
