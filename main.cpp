@@ -48,8 +48,8 @@ int main()
     glViewport(0, 0, 800, 600);
     // 注冊窗體調整函數
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+    // glEnable(GL_BLEND);
+    // glBlendFunc(GL_ONE, GL_ONE);
     /***************************************************************/
 
     Shader shader("shader.vs","shader.fs");
@@ -183,7 +183,7 @@ int main()
         }
 
         // 設置顏色
-        glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+        glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
         // 清除顏色緩衝區, 並使用上面設置的顏色進行填充 
         glClear(GL_COLOR_BUFFER_BIT);
 
