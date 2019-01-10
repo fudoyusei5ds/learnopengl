@@ -1,8 +1,13 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
-#include <math.h>
 
+// 载入线性代数库
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+// 
 #include "shader.h"
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -79,10 +84,10 @@ int main()
 
     // 載入第二張圖片紋理
     stbi_set_flip_vertically_on_load(true);
-    data = stbi_load("ABCD_A.png", &width, &height, &nrChannels, 0);
+    data = stbi_load("awesomeface.png", &width, &height, &nrChannels, 0);
     unsigned int texture2;
     glGenTextures(1,&texture2);
-    glBindTexture(GL_TEXTURE_2D,texture2);
+    glBindTexture(GL_TEXTURE_2D, texture2);
 
     // set the texture wrapping parameters
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// set texture wrapping to GL_REPEAT (default wrapping method)
@@ -152,58 +157,45 @@ int main()
 
     /***************************************************************/
 
-    // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);   // 啓用線框模式繪制圖形
-
-    // float timeValue,greenValue;
-    // int vertexColorLocation;
-
     // 一個渲染循環, 在窗體退出前一直渲染
-    // 首先檢查窗體是否被要求退出
-    float alpha=0.2;
+    // 首先檢查窗體是否被要求退出 
 
     while(!glfwWindowShouldClose(window))
     {
         // 接收輸入
         processInput(window);  
 
-        if(glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-        {
-            if(alpha<=1.0f)
-            {
-                alpha+=0.01f;
-            }
-        }
-
-        if(glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-        {
-            if(alpha>=0.0f)
-            {
-                alpha-=0.01f;
-            }
-        }
-
         // 設置顏色
-        glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
+        glClearColor(0.0f, .5f, 0.4f, 1.0f);
         // 清除顏色緩衝區, 並使用上面設置的顏色進行填充 
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // 通过glfw提供的函数计算时间
-        // timeValue = glfwGetTime();
-        // greenValue = (sin(timeValue) / 2.0f) + 0.5f;
-        // // 查询uniform变量的地址
-        // vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
-
-
-        // 设置uniform变量的值
-        // glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+        
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture1);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture2);
 
         shader.use();
-        shader.setFloat("alpha",alpha);
-        
+
+        // 模型矩阵, 调整模型的大小与方向. 相对于物体的原点进行调整
+        glm::mat4 model;
+        model = glm::rotate(model, glm::radians(-45.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        // 视图矩阵, 调整模型位于世界中的位置
+        glm::mat4 view;
+        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+        // 投影矩阵, 正交投影
+        glm::mat4 projection;
+        projection = glm::perspective(glm::radians(45.0f), 800/600.0f, 0.1f, 100.0f);
+
+        unsigned int transformLoc = glGetUniformLocation(shader.ID,"model");
+        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(model));
+        transformLoc = glGetUniformLocation(shader.ID,"view");
+        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(view));
+        transformLoc = glGetUniformLocation(shader.ID,"projection");
+        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(projection));
+
+        // 绑定VAO, 绘制图形
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
