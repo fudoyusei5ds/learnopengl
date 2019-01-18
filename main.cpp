@@ -7,14 +7,13 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-// 
+// 载入着色编译器
 #include "shader.h"
 
+// 载入图片库
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-
-// 這個函數用來改變視口大小
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 
@@ -53,13 +52,16 @@ int main()
     glViewport(0, 0, 800, 600);
     // 注冊窗體調整函數
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
+    /***************************************************************/
+
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    /***************************************************************/
+    glEnable(GL_DEPTH_TEST);
 
     Shader shader("shader.vs","shader.fs");
 
-    // 導入圖片
+    // 导入图片
     int width, height, nrChannels;
     unsigned char *data = stbi_load("container.jpg", &width, &height, &nrChannels, 0);
 
@@ -76,49 +78,52 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     // 使用之前的圖片來生成紋理
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
     // 自動生成多級漸遠紋理
     glGenerateMipmap(GL_TEXTURE_2D);
     // 釋放圖像數據
     stbi_image_free(data);
 
-    // 載入第二張圖片紋理
-    stbi_set_flip_vertically_on_load(true);
-    data = stbi_load("awesomeface.png", &width, &height, &nrChannels, 0);
-    unsigned int texture2;
-    glGenTextures(1,&texture2);
-    glBindTexture(GL_TEXTURE_2D, texture2);
-
-    // set the texture wrapping parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// set texture wrapping to GL_REPEAT (default wrapping method)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    // set texture filtering parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    // png格式的圖片紋理需要加上alpha通道
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);
-    stbi_image_free(data);
 
     shader.use();
-
     shader.setInt("texture1",0);
-    shader.setInt("texture2",1);
 
-    // 繪制兩個三角形
+    // 绘制一个正方体, 这里是它每个点的坐标
     float vertices[] = {
-        //     ---- 位置 ----       ---- 颜色 ----     - 纹理坐标 -
-        0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // 右上
-        0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // 右下
-        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // 左下
-        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // 左上
+        // 点坐标          纹理坐标
+        .5f, .5f,  .5f, 1.0f, 1.0f,
+        .5f, -.5f, .5f, 1.0f, 0.0f,
+        -.5f,-.5f, .5f, 0.0f, 0.0f,
+        -.5f,.5f,  .5f, 0.0f, 1.0f,
+        .5f, .5f, -.5f, 0.0f, 1.0f,
+        .5f, -.5f,-.5f, 0.0f, 0.0f,
+        -.5f,-.5f,-.5f, 1.0f, 0.0f,
+        -.5f,.5f, -.5f, 1.0f, 1.0f
     };
 
-    unsigned int indices[] = { // 注意索引从0开始! 
-        0, 1, 3, // 第一个三角形
-        1, 2, 3  // 第二个三角形
+    unsigned int indices[] = {
+        // 绘制索引
+        0, 1, 3,
+        1, 2, 3, // 前
+        7, 6, 4,
+        6, 5, 4, // 后
+        4, 0, 7,
+        0, 3, 7, // 上
+        1, 5, 2,
+        5, 6, 2, // 下
+        3, 2, 7,
+        2, 6, 7, // 左
+        4, 5, 0,
+        5, 1, 0  // 右
     };
+
+    // float texvert[] = {
+    //     // 纹理坐标
+    //     1.0f, 1.0f,
+    //     1.0f, 0.0f,
+    //     0.0f, 0.0f,
+    //     0.0f, 1.0f
+    // };
 
     // 生成一個頂點緩衝區對象
     unsigned int VBO,VAO,EBO;
@@ -141,16 +146,12 @@ int main()
     
     // 設置緩衝區數據的使用方法
     // 在这里配置位置为0的位置数据
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    // 在这里配置位置为1的颜色数据
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3* sizeof(float)));
-    glEnableVertexAttribArray(1);
-
     // 在這裏配置紋理坐標的數據
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
@@ -168,36 +169,35 @@ int main()
         // 設置顏色
         glClearColor(0.0f, .5f, 0.4f, 1.0f);
         // 清除顏色緩衝區, 並使用上面設置的顏色進行填充 
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture1);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, texture2);
 
         shader.use();
 
-        // 模型矩阵, 调整模型的大小与方向. 相对于物体的原点进行调整
+        // 模型矩阵, 用于处理模型内部的变换
         glm::mat4 model;
-        model = glm::rotate(model, glm::radians(-45.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        // 视图矩阵, 调整模型位于世界中的位置
-        glm::mat4 view;
-        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-        // 投影矩阵, 正交投影
-        glm::mat4 projection;
-        projection = glm::perspective(glm::radians(45.0f), 800/600.0f, 0.1f, 100.0f);
+        model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(1.0f, .5f, 0.0f));
 
-        unsigned int transformLoc = glGetUniformLocation(shader.ID,"model");
-        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(model));
-        transformLoc = glGetUniformLocation(shader.ID,"view");
-        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(view));
-        transformLoc = glGetUniformLocation(shader.ID,"projection");
-        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(projection));
+        // 观察矩阵, 用于处理模型和世界坐标的相对位置
+        glm::mat4 view;
+        view = glm::translate(view, glm::vec3(0, 0, -3.0f));
+
+        // 投影矩阵
+        glm::mat4 projection;
+        projection = glm::perspective(glm::radians(45.0f), 800/600.0f, .1f, 100.0f);
+
+        unsigned int modelLoc = glGetUniformLocation(shader.ID, "model");
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+        unsigned int viewLoc = glGetUniformLocation(shader.ID, "view");
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
+        unsigned int projectionLoc = glGetUniformLocation(shader.ID, "projection");
+        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
         // 绑定VAO, 绘制图形
         glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
         // 交換緩衝, 繪制屏幕
         glfwSwapBuffers(window);
