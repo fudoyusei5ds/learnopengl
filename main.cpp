@@ -16,6 +16,17 @@
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
+void mouse_callback(GLFWwindow *window, double xpos, double ypos);
+
+glm::vec3 cameraPos = glm::vec3(0, 0, 3.0f);
+glm::vec3 cameraFront = glm::vec3(0, 0, -1);
+glm::vec3 cameraUp = glm::vec3(0, 1, 0);
+float deltaTime = 0;
+float lastFrame = 0;
+float pitch, yaw;
+
+float lastX = 400, lastY = 300;
+int firstMouse = 1;
 
 int main()
 {
@@ -189,20 +200,9 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    // 在这里设置摄像机
-    // 设置摄像机的位置
-    glm::vec3 cameraPos = glm::vec3(0, 0, 3.0f);
-    // 设置摄像机的指向
-    glm::vec3 cameraTarget = glm::vec3(0, 0, 0);
-    glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
-    // 设置摄像机的右轴
-    glm::vec3 up = glm::vec3(0, 1, 0);
-    glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));
-    // 设置摄像机的上轴
-    glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
-
     /***************************************************************/
-
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     // 一個渲染循環, 在窗體退出前一直渲染
     // 首先檢查窗體是否被要求退出 
 
@@ -230,7 +230,7 @@ int main()
         float camX = sin(glfwGetTime()) * radius;
         float camZ = cos(glfwGetTime()) * radius;
         glm::mat4 view;
-        view = glm::lookAt(glm::vec3(camX, 0, camZ), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+        view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
          
         // 投影矩阵
         glm::mat4 projection;
@@ -263,6 +263,10 @@ int main()
         glfwSwapBuffers(window);
         // 檢查觸發事件, 調整窗體狀態
         glfwPollEvents(); 
+
+        float currentFrame = glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
     }
 
     glDeleteVertexArrays(1, &VAO);
@@ -285,4 +289,48 @@ void processInput(GLFWwindow *window)
     // 按下esc, 發出窗體退出信號
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+    
+    float cameraSpeed = 2.5f*deltaTime;
+    if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        cameraPos += cameraSpeed*cameraFront;
+    if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        cameraPos -= cameraSpeed*cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+}
+
+void mouse_callback(GLFWwindow *window, double xpos, double ypos)
+{
+    if(firstMouse)
+    {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = 0;
+    }
+
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos;
+    lastX = xpos;
+    lastY = ypos;
+    
+    float sensitivity = 0.05f;
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+
+    yaw += xoffset;
+    pitch += yoffset;
+
+    if(pitch > 89.0f)
+        pitch = 89.0f;
+    if(pitch < -89.0f)
+        pitch = -89.0f;
+
+    glm::vec3 front;
+    front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+    front.y = sin(glm::radians(pitch));
+    front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+    cameraFront = glm::normalize(front);
+
 }
