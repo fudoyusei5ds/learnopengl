@@ -145,6 +145,19 @@ int main()
         21, 22, 23
     };
 
+    glm::vec3 cubePositions[] = {
+        glm::vec3( 0.0f,  0.0f,  0.0f), 
+        glm::vec3( 2.0f,  5.0f, -15.0f), 
+        glm::vec3(-1.5f, -2.2f, -2.5f),  
+        glm::vec3(-3.8f, -2.0f, -12.3f),  
+        glm::vec3( 2.4f, -0.4f, -3.5f),  
+        glm::vec3(-1.7f,  3.0f, -7.5f),  
+        glm::vec3( 1.3f, -2.0f, -2.5f),  
+        glm::vec3( 1.5f,  2.0f, -2.5f), 
+        glm::vec3( 1.5f,  0.2f, -1.5f), 
+        glm::vec3(-1.3f,  1.0f, -1.5f)  
+    };
+
     // 生成一個頂點緩衝區對象
     unsigned int VBO,VAO,EBO;
     glGenVertexArrays(1, &VAO);
@@ -176,6 +189,18 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
+    // 在这里设置摄像机
+    // 设置摄像机的位置
+    glm::vec3 cameraPos = glm::vec3(0, 0, 3.0f);
+    // 设置摄像机的指向
+    glm::vec3 cameraTarget = glm::vec3(0, 0, 0);
+    glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
+    // 设置摄像机的右轴
+    glm::vec3 up = glm::vec3(0, 1, 0);
+    glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));
+    // 设置摄像机的上轴
+    glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
+
     /***************************************************************/
 
     // 一個渲染循環, 在窗體退出前一直渲染
@@ -197,27 +222,42 @@ int main()
         shader.use();
 
         // 模型矩阵, 用于处理模型内部的变换
-        glm::mat4 model;
-        model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(1.0f, .5f, 0.0f));
+        // glm::mat4 model;
+        // model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(1.0f, .5f, 0.0f));
 
-        // 观察矩阵, 用于处理模型和世界坐标的相对位置
+        // 摄像机位置修改
+        float radius = 10.0f;
+        float camX = sin(glfwGetTime()) * radius;
+        float camZ = cos(glfwGetTime()) * radius;
         glm::mat4 view;
-        view = glm::translate(view, glm::vec3(0, 0, -3.0f));
-
+        view = glm::lookAt(glm::vec3(camX, 0, camZ), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+         
         // 投影矩阵
         glm::mat4 projection;
         projection = glm::perspective(glm::radians(45.0f), 800/600.0f, .1f, 100.0f);
 
-        unsigned int modelLoc = glGetUniformLocation(shader.ID, "model");
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+        // unsigned int modelLoc = glGetUniformLocation(shader.ID, "model");
+        // glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+        // 绑定VAO, 绘制图形
+        glBindVertexArray(VAO);
+
         unsigned int viewLoc = glGetUniformLocation(shader.ID, "view");
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
         unsigned int projectionLoc = glGetUniformLocation(shader.ID, "projection");
         glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+        
+        for(unsigned int i = 0; i < 10; i++)
+        {
+            glm::mat4 model;
+            model = glm::translate(model, cubePositions[i]);
+            float angle = 20.0f * glfwGetTime(); 
+            model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+            unsigned int modelLoc = glGetUniformLocation(shader.ID, "model");
+            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
-        // 绑定VAO, 绘制图形
-        glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+            glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+        }
 
         // 交換緩衝, 繪制屏幕
         glfwSwapBuffers(window);
